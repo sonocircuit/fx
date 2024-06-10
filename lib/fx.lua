@@ -17,8 +17,8 @@ function Fx:install()
     end
 end
 
-function Fx:add_control(id, name, key, spec)
-    params:add_control(id, name, spec)
+function Fx:add_control(id, name, key, spec, formatter)
+    params:add_control(id, name, spec, formatter)
     params:set_action(id, function(val)
         osc.send({ "localhost", 57120 }, self.subpath.."/set", {key, val})
     end)
@@ -31,9 +31,10 @@ function Fx:add_taper(id, name, key, min, max, default, k, units)
     end)
 end
 
-function Fx:add_option(id, name, key, options, default)
+function Fx:add_option(id, name, key, options, default, values)
     params:add_option(id, name, options, default)
     params:set_action(id, function(val)
+        local val = values and values[val] or val
         osc.send({ "localhost", 57120 }, self.subpath.."/set", {key, val})
     end)
 end
@@ -51,6 +52,7 @@ function Fx:add_slot(id, name)
         osc.send({ "localhost", 57120 }, self.subpath.."/slot", {Fx.slot_symbols[val]})
         _menu.rebuild_params()
     end)
+    params:hide(id.."_drywet")
 end
 
 return Fx
