@@ -31,10 +31,9 @@ function Fx:add_taper(id, name, key, min, max, default, k, units)
     end)
 end
 
-function Fx:add_option(id, name, key, options, default, values)
+function Fx:add_option(id, name, key, options, default)
     params:add_option(id, name, options, default)
     params:set_action(id, function(val)
-        local val = values and values[val] or val
         osc.send({ "localhost", 57120 }, self.subpath.."/set", {key, val})
     end)
 end
