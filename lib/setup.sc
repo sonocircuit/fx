@@ -1,61 +1,73 @@
 FxSetup {
-    classvar <sendA, <sendB, <wet, <fxGroup, <sendAGroup, <sendBGroup, <insertGroup, <plugins, <initOnce;
+    classvar <sendA, <sendB, <wet, <fxGroup, <sendAGroup, <sendBGroup, <insertGroup, plugins, initOnce;
+
+    *alloc {
+        if(initOnce.isNil, {
+            initOnce = true;
+            sendA = Bus.audio(Server.default, numChannels: 2);
+            sendB = Bus.audio(Server.default, numChannels: 2);
+            wet = Bus.audio(Server.default, numChannels: 2);
+            ~sendA = sendA;
+            ~sendB = sendB;
+			"INIT THIS ONCE YO".postln;
+        })
+    }
+
     *dynamicInit {
-        if(fxGroup == nil, {
+        if(fxGroup.isNil, {
             fxGroup = Group.new(Server.default, addAction: \addToTail);
             sendAGroup = Group.new(fxGroup, addAction: \addToTail);
             sendBGroup = Group.new(fxGroup, addAction: \addToTail);
             insertGroup = Group.new(fxGroup, addAction: \addToTail);
-            ~sendAGroup = sendAGroup;
-            ~sendBGroup = sendBGroup;
-            ~insertGroup = insertGroup;
-        });
+			"FX setup complete".postln;
+        })
     }
+
     *dynamicCleanup {
-        fxGroup.free;
-        fxGroup = nil;
-        sendAGroup = nil;
-        sendBGroup = nil;
-        insertGroup = nil;
-        ~sendAGroup = sendAGroup;
-        ~sendBGroup = sendBGroup;
-        ~insertGroup = insertGroup;        
+        if(fxGroup.notNil, {
+            fxGroup.free;
+            fxGroup = nil;
+            sendAGroup = nil;
+            sendBGroup = nil;
+            insertGroup = nil;
+			"FX cleanup complete".postln;
+        })
     }
 
     *register { |p|
-        "register % initOnce is %\n".postf(p, initOnce);
         plugins = plugins.add(p);
+        "registered %\n".postf(p);
     }
 
     *initClass {
-        initOnce = false;
+
         plugins = [];
+
         StartUp.add {
-            sendA = Bus.audio(Server.default, numChannels: 2);
-            sendB = Bus.audio(Server.default, numChannels: 2);
-            wet = Bus.audio(Server.default, numChannels: 2);
-            SynthDef(\replacer, {|in, out, drywet|
-                XOut.ar(out, drywet, In.ar(in, 2));
-            }).add;
-            ~sendA = sendA;
-            ~sendB = sendB;
+
+            OSCFunc.new({ |msg, time, addr, recvPort|
+                FxSetup.alloc;
+            }, "/fxmod/alloc");
+
             OSCFunc.new({ |msg, time, addr, recvPort|
                 FxSetup.dynamicInit;
-                "FX setup complete".postln;
             }, "/fxmod/init");
+
             OSCFunc.new({ |msg, time, addr, recvPort|
                 FxSetup.dynamicCleanup;
-                "FX cleanup complete".postln;
-            }, "/fxmod/cleanup");      
-            if (initOnce.not, {
-                initOnce = true;
-                "INIT THIS ONCE YO".postln;
-                plugins.do { |p|
-                    "Installing %\n".postf(p);
-                    p.addSynthdefs;
-                    p.listenOSC;
-                };
-            });                  
-        };
+            }, "/fxmod/cleanup");
+
+            SynthDef(\FxReplacer, {|inBus, outBus, drywet|
+				XOut.ar(outBus, drywet, In.ar(inBus, 2));
+			}).add;
+
+			plugins.do { |p|
+				"installing %\n".postf(p);
+				p.addSynthdefs;
+				p.listenOSC;
+			};
+
+        }
     }
+
 }
