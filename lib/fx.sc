@@ -28,35 +28,35 @@ FxBase {
 				(symbol++" set to: none").postln;
 			}
 			{\sendA} {
-				if ( (FxSetup.sendAGroup.notNil) && (~sendA.notNil), {
+				if ((FxSetup.sendGroup.notNil && ~sendA.notNil), {
 					syn = Synth.new(symbol, [
 						\inBus, ~sendA,
 						\outBus, Server.default.outputBus,
-					] ++ params.asPairs, target: FxSetup.sendAGroup);
+					] ++ params.asPairs, target: FxSetup.sendGroup);
 					(symbol++" set to: send a").postln;
 				});
 			}
 			{\sendB} {
-				if ( (FxSetup.sendBGroup.notNil) && (~sendB.notNil), {
+				if ((FxSetup.sendGroup.notNil && ~sendB.notNil), {
 					syn = Synth.new(symbol, [
 						\inBus, ~sendB,
 						\outBus, Server.default.outputBus,
-					] ++ params.asPairs, target: FxSetup.sendBGroup);
+					] ++ params.asPairs, target: FxSetup.sendGroup);
 					(symbol++" set to: send b").postln;
 				});
 			}
 			{\insert} {
-				if ( FxSetup.insertGroup.notNil, {                
+				if (FxSetup.insertGroup.notNil, {                
 					syn = Synth.new(symbol, [
 						\inBus, Server.default.outputBus,
 						\outBus, FxSetup.wet,
 					] ++ params.asPairs, FxSetup.insertGroup, \addToTail);
 					(symbol++" set to: insert").postln;
 
-                    replacer = Synth.new(\FxReplacer, [
+          replacer = Synth.new(\FxReplacer, [
 						\inBus, FxSetup.wet,
 						\outBus, Server.default.outputBus,
-						\drywet, drywet,
+						\drywet, drywet
 					], FxSetup.insertGroup, \addToTail);
 				});
 			}
