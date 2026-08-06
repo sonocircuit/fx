@@ -1,5 +1,5 @@
 FxSetup {
-    classvar <sendA, <sendB, <wet, <fxGroup, <sendAGroup, <sendBGroup, <insertGroup, plugins, initOnce;
+    classvar <sendA, <sendB, <wet, <fxGroup, <sendGroup, <insertGroup, plugins, initOnce;
 
     *alloc {
         if(initOnce.isNil, {
@@ -15,10 +15,9 @@ FxSetup {
 
     *dynamicInit {
         if(fxGroup.isNil, {
-            fxGroup = Group.new(Server.default, addAction: \addToTail);
-            sendAGroup = Group.new(fxGroup, addAction: \addToTail);
-            sendBGroup = Group.new(fxGroup, addAction: \addToTail);
-            insertGroup = Group.new(fxGroup, addAction: \addToTail);
+            fxGroup = Group.new(Server.default, \addToTail);
+            insertGroup = Group.new(fxGroup);
+            sendGroup = Group.new(fxGroup);
 			"FX setup complete".postln;
         })
     }
@@ -27,8 +26,7 @@ FxSetup {
         if(fxGroup.notNil, {
             fxGroup.free;
             fxGroup = nil;
-            sendAGroup = nil;
-            sendBGroup = nil;
+            sendGroup = nil;
             insertGroup = nil;
 			"FX cleanup complete".postln;
         })
