@@ -34,7 +34,7 @@ FxSetup {
 
     *register { |p|
         plugins = plugins.add(p);
-        "registered %\n".postf(p);
+        "registered: %\n".postf(p.class.name);
     }
 
     *initClass {
@@ -57,10 +57,11 @@ FxSetup {
 
             SynthDef(\FxReplacer, {|inBus, outBus, drywet|
 				XOut.ar(outBus, drywet, In.ar(inBus, 2));
+				ReplaceOut.ar(inBus, Silent.ar(2));
 			}).add;
 
 			plugins.do { |p|
-				"installing %\n".postf(p);
+				"installing: %\n".postf(p.class.name);
 				p.addSynthdefs;
 				p.listenOSC;
 			};
